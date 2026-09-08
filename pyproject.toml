@@ -1,13 +1,18 @@
 [project]
-name = "adk-demo"
+name = "grocery-tracing-demo"
 version = "0.1.0"
-description = "Add your description here"
+description = "Framework-agnostic LangSmith tracing demo: a grocery shopping agent built with Google ADK, the OpenAI Agents SDK, and bare code, all routed through LangChain's LLM gateway."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "google-adk>=1.25.0",
-    "langsmith[otel]>=0.7.3",
+    "langsmith[openai-agents,otel]>=0.7.3",
+    "litellm>=1.99.0",
+    "openai>=1.60.0",
+    "openai-agents>=0.20.0",
     "opentelemetry-exporter-otlp-proto-http>=1.38.0",
     "opentelemetry-sdk>=1.38.0",
+    "python-dotenv>=1.2.1",
+    "streamlit>=1.63.0",
     "wrapt>=2.1.1",
 ]

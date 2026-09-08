@@ -1,11 +1,25 @@
-# Google ADK + LangSmith tracing demo
+# Framework-agnostic LangSmith tracing demo
 
-Traces a Google ADK agent to LangSmith using two approaches:
+A grocery **in-store shopping assistant** built **three different ways** — to show
+that LangSmith tracing is framework-agnostic. All three implementations route
+their model calls through **LangChain's LLM gateway** and trace to LangSmith:
 
-1. **Native integration** — `langsmith.integrations.google_adk.configure_google_adk`
-2. **OpenTelemetry** — `langsmith.integrations.otel.configure` (uses ADK's built-in OTel instrumentation)
+| Implementation | Framework | Model (via gateway) | Tracing |
+| --- | --- | --- | --- |
+| `agent_adk.py` | Google ADK | `gemini-3.5-flash-lite` (LiteLlm) | native `configure_google_adk` |
+| `agent_openai_sdk.py` | OpenAI Agents SDK | `gpt-5.6-luna` | `OpenAIAgentsTracingProcessor` |
+| `agent_bare.py` | none (hand-written tool loop) | `gpt-5.6-luna` | `wrap_openai` + `@traceable` |
 
-Both send traces to LangSmith; the difference is the plumbing underneath.
+All three share the same in-store shopping tools (`grocery_tools.py`): find an
+item's aisle, check price, check stock, and suggest a recipe shopping list.
+
+The **LangChain LLM gateway** is the single point every implementation calls:
+
+- Gemini endpoint: `https://gateway.smith.langchain.com/gemini`
+- OpenAI-compatible endpoint: `https://gateway.smith.langchain.com/openai/v1`
+
+Your `LANGSMITH_API_KEY` is used both as the gateway API key **and** to send
+traces to LangSmith.
 
 ## Setup
 
@@ -15,24 +29,33 @@ Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 uv sync
 ```
 
-Copy `.env.example` to `.env` and fill in:
+Copy `.env.example` to `.env` and fill in your LangSmith API key:
 
 ```
 LANGSMITH_API_KEY=<your key>
-LANGSMITH_TRACING=true
-
-GOOGLE_APPLICATION_CREDENTIALS=./vertexCred.json
-GOOGLE_GENAI_USE_VERTEXAI=true
-GOOGLE_CLOUD_LOCATION=us-central1
+LANGSMITH_PROJECT="grocery-agents"
+LANGSMITH_TRACING="true"
 ```
 
-`GOOGLE_APPLICATION_CREDENTIALS` should point to a Vertex AI service account JSON key.
-If you'd rather use the Gemini API directly, drop the `GOOGLE_*` vars and set `GOOGLE_API_KEY` instead.
+## Run the UI (recommended)
 
-## Run
+A Streamlit chat UI lets you pick which implementation to talk to:
+
+```bash
+uv run streamlit run app.py
+```
+
+Use the sidebar to switch between **Google ADK**, **OpenAI Agents SDK**, and
+**Bare code**, then chat. Open your LangSmith project to watch traces land from
+all three.
+
+## Run from the CLI
+
+Fire one question at each of the three implementations in sequence:
 
 ```bash
 uv run main.py
 ```
 
-Traces show up in two LangSmith projects: `adk-native` and `adk-otel`.
+Traces from every implementation show up in the LangSmith project set by
+`LANGSMITH_PROJECT`.

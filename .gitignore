@@ -10,3 +10,10 @@ wheels/
 .venv
 .env
 vertexCred.json
+
+# Secrets and credentials
+*.pem
+*.key
+*.crt
+credentials.json
+.DS_Store
